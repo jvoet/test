@@ -3,7 +3,7 @@ var router = express.Router();
 var userController = require('../controllers/userController');
 
 router.get("/getAll", userController.getAll);
-// router.get("/getPage/:page/:pageSize/:orderBy", userController.getPage);
+router.get("/getPage/:page/:pageSize/:orderBy", userController.getPage);
 router.get("/getById/:id", userController.getById);
 router.post("/create", userController.create);
 router.put("/update", userController.update);

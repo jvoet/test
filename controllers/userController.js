@@ -45,90 +45,53 @@ exports.getAll = function (req, res) {
     });
 };
 
-// exports.getPage = function (req, res) {
-//     var method_name = "getPage";
+exports.getPage = function (req, res) {
+    var method_name = "getPage";
 
-//     _orm.connect(_dbconfig, function (err, db) {
-//         if (err)
-//             return errorResponse(method_name, res, err);
+    var page = Number(req.params.page);
+    var pageSize = Number(req.params.pageSize);
+    var orderBy = req.params.orderBy;
 
-//         var page = Number(req.params.page);
-//         var pageSize = Number(req.params.pageSize);
-//         var orderBy = req.params.orderBy;
+    console.log("Page: " + page + " Page-Size: " + pageSize + " Order-By: " + orderBy);
 
-//         console.log("Page: " + page + " Page-Size: " + pageSize + " Order-By: " + orderBy);
+    if (!page || page <= 0)
+        return errorResponse(method_name, res, "Parameter 'page' must be specified");
 
-//         db.use(_paging);
+    if (!pageSize || pageSize <= 0)
+        return errorResponse(method_name, res, "Parameter 'pageSize' must be specified");
 
-//         var userModel = getModel(db);
-//         // add the table to the database
-//         userModel.sync(function (err) {
-//             if (err)
-//                 return errorResponse(method_name, res, err);
+    _orm.connect(_dbconfig, function (err, db) {
+        if (err)
+            return errorResponse(method_name, res, err);
 
-//             userModel.count({}, function (err, count) {
-//                 if (err)
-//                     return errorResponse(method_name, res, err);
+        var userModel = getModel(db);
+        // add the table to the database
+        userModel.sync(function (err) {
+            if (err)
+                return errorResponse(method_name, res, err);
 
-//                 console.log("Count: " + count);
-//                 var totalPages = Math.round(count / pageSize);
-//                 console.log("Total pages: %d", totalPages);
+            userModel.count({}, function (err, count) {
+                if (err)
+                    return errorResponse(method_name, res, err);
 
-//                 var offset = 0;
-//                 if (page > 1)
-//                     offset = page * pageSize;
+                console.log("Count: " + count);
+                var totalPages = Math.round(count / pageSize);
+                console.log("Total pages: %d", totalPages);
 
-//                 var limit = pageSize;
+                var offset = 0;
+                if (page && page > 1)
+                    offset = (page - 1) * pageSize;
 
-//                 userModel.find({}, ['name', 'surname']).limit(limit).offset(offset).get(function (err, dbUsers) {
-//                     if (err)
-//                         return errorResponse(method_name, res, err);
+                userModel.find({}, ['name', 'surname']).limit(pageSize).offset(offset).run(function (err, dbUsers) {
+                    if (err)
+                        return errorResponse(method_name, res, err);
 
-//                     return successResponse(method_name, res, dbUsers);
-//                 });
-
-//                userModel.offset(offset).limit(limit).find({}, ['name', 'surname'], function (err, dbUsers) {
-//                    if (err)
-//                        return errorResponse(method_name, res, err);
-//
-//                    return successResponse(method_name, res, dbUsers);
-//                });
-            // });
-
-
-
-
-//            userModel.settings.set("pagination.perpage", pageSize); // default is 20
-//
-//            userModel.pages(function (err, pages) {
-//                if (err)
-//                    return errorResponse(method_name, res, err);
-//
-//                console.log("Total pages: %d", pages);
-//
-//                userModel.find({}, ['name', 'surname'], function (err, dbUsers) {
-//                    if (err)
-//                        return errorResponse(method_name, res, err);
-//
-//                    return successResponse(method_name, res, dbUsers);
-//                });
-
-//                userModel.page(page).order(["-name", "surname"]).find({}, function (err, dbUsers) {
-//                    if (err)
-//                        return errorResponse(method_name, res, err);
-//
-//                    return successResponse(method_name, res, dbUsers);
-//                });
-
-//                userModel.page(page).order("name").run(function (err, dbUsers) {
-//                    if (err)
-//                        return errorResponse(method_name, res, err);
-//
-//                    return successResponse(method_name, res, dbUsers);
-//                });
-//         });
-//     });
-// };
+                    return successResponse(method_name, res, dbUsers);
+                });
+            });
+        });
+    });
+};
 
 exports.getById = function (req, res) {
     var method_name = "getById";
